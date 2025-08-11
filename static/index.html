@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonCandidat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="authPage" class="page active">
+<div class="auth-container">
+<div class="auth-box glass">
+<div class="logo">MonCandidat</div>
+<div class="tagline">Votre carrière commence ici</div>
+<div class="auth-tabs">
+<button class="tab-btn active" data-tab="signin">Connexion</button>
+<button class="tab-btn" data-tab="signup">Inscription</button>
+</div>
+<form id="signinForm" class="auth-form active">
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="signinEmail" required>
+</div>
+<div class="form-group">
+<label>Mot de passe</label>
+<input type="password" id="signinPassword" required>
+</div>
+<button type="submit" class="btn-primary">Se connecter</button>
+</form>
+<form id="signupForm" class="auth-form">
+<div class="form-group">
+<label>Nom complet</label>
+<input type="text" id="signupName" required>
+</div>
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="signupEmail" required>
+</div>
+<div class="form-group">
+<label>Mot de passe</label>
+<input type="password" id="signupPassword" required>
+</div>
+<div class="form-group">
+<label>Téléphone</label>
+<input type="tel" id="signupPhone" required>
+</div>
+<button type="submit" class="btn-primary">S'inscrire</button>
+</form>
+</div>
+</div>
+</div>
+
+<div id="jobsPage" class="page">
+<div class="container">
+<header class="header glass">
+<div class="header-content">
+<div class="logo">MonCandidat</div>
+<div class="user-info">
+<span id="userName">Bienvenue</span>
+<button class="btn-logout" onclick="logout()">Déconnexion</button>
+</div>
+</div>
+</header>
+
+<div class="jobs-container">
+<h1 class="page-title">Postes disponibles chez INSOMEA </h1>
+<div class="jobs-grid">
+<div class="job-card glass" data-job="dev-web">
+<div class="job-icon">💻</div>
+<h3>Développeur Web</h3>
+<p>Créez des applications web innovantes</p>
+<div class="job-details">
+<span class="job-type">CDI</span>
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+
+<div class="job-card glass" data-job="data-analyst">
+<div class="job-icon">📊</div>
+<h3>Analyste de Données</h3>
+<p>Analysez et interprétez les données</p>
+<div class="job-details">
+<span class="job-type">CDI</span>
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+
+<div class="job-card glass" data-job="ux-designer">
+<div class="job-icon">🎨</div>
+<h3>UX Designer</h3>
+<p>Concevez des expériences utilisateur</p>
+<div class="job-details">
+<span class="job-type">CDI</span>
+
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+
+<div class="job-card glass" data-job="ingenieur-reseau">
+<div class="job-icon">🌐</div>
+<h3>Ingénieur Réseau</h3>
+<p>Gérez l'infrastructure réseau</p>
+<div class="job-details">
+<span class="job-type">CDI</span>
+
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+
+<div class="job-card glass" data-job="stage-cloud">
+<div class="job-icon">☁️</div>
+<h3>Stage Cloud</h3>
+<p>Découvrez les technologies cloud</p>
+<div class="job-details">
+<span class="job-type">Stage</span>
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+
+<div class="job-card glass" data-job="stage-dev">
+<div class="job-icon">🚀</div>
+<h3>Stage Développement</h3>
+<p>Apprenez le développement logiciel</p>
+<div class="job-details">
+<span class="job-type">Stage</span>
+</div>
+<button class="btn-apply">Postuler</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="applicationPage" class="page">
+<div class="container">
+<div class="application-container glass">
+<h2 id="jobTitle">Candidature</h2>
+<form id="applicationForm">
+<div class="form-section">
+<h3>Informations personnelles</h3>
+<div class="form-row">
+<div class="form-group">
+<label>Prénom</label>
+<input type="text" name="firstName" required>
+</div>
+<div class="form-group">
+<label>Nom</label>
+<input type="text" name="lastName" required>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Email</label>
+<input type="email" name="email" required>
+</div>
+<div class="form-group">
+<label>Téléphone</label>
+<input type="tel" name="phone" required>
+</div>
+</div>
+<div class="form-group">
+<label>Adresse</label>
+<textarea name="address" rows="3" required></textarea>
+</div>
+</div>
+
+<div class="form-section">
+<h3>Expérience professionnelle</h3>
+<div class="form-group">
+<label>Années d'expérience</label>
+<select name="experience" required>
+<option value="">Sélectionnez</option>
+<option value="0-1">0-1 an</option>
+<option value="2-3">2-3 ans</option>
+<option value="4-5">4-5 ans</option>
+<option value="5+">5+ ans</option>
+</select>
+</div>
+<div class="form-group">
+<label>Dernier poste occupé</label>
+<input type="text" name="lastPosition">
+</div>
+<div class="form-group">
+<label>Compétences principales</label>
+<textarea name="skills" rows="3" required></textarea>
+</div>
+</div>
+
+<div class="form-section">
+<h3>Formation</h3>
+<div class="form-group">
+<label>Niveau d'études</label>
+<select name="education" required>
+<option value="">Sélectionnez</option>
+<option value="bac">Baccalauréat</option>
+<option value="bac+2">Bac+2</option>
+<option value="bac+3">Bac+3</option>
+<option value="bac+5">Bac+5</option>
+<option value="bac+8">Bac+8</option>
+</select>
+</div>
+<div class="form-group">
+<label>Domaine d'études</label>
+<input type="text" name="fieldOfStudy" required>
+</div>
+</div>
+
+<div class="form-section">
+<h3>Documents</h3>
+<div class="form-group">
+<label>Choisir votre CV</label>
+<input type="file" name="cv" accept=".pdf,.doc,.docx" required>
+</div>
+<div class="form-group">
+<label>Lien GitHub (optionnel)</label>
+<input type="url" name="github" placeholder="https://github.com/votre-profil">
+</div>
+</div>
+
+<div class="form-section">
+<h3>Questions spécifiques au poste</h3>
+<div id="jobQuestions"></div>
+</div>
+
+<div class="form-section">
+<h3>Questions de personnalité</h3>
+<div class="question-group">
+<label>Comment gérez-vous le stress au travail ?</label>
+<div class="radio-group">
+<label><input type="radio" name="stress" value="planning">Je planifie et organise mes tâches</label>
+<label><input type="radio" name="stress" value="pause">Je prends des pauses régulières</label>
+<label><input type="radio" name="stress" value="communication">Je communique avec mon équipe</label>
+<label><input type="radio" name="stress" value="technique">J'utilise des techniques de relaxation</label>
+</div>
+</div>
+
+<div class="question-group">
+<label>Préférez-vous travailler :</label>
+<div class="radio-group">
+<label><input type="radio" name="workStyle" value="team">En équipe</label>
+<label><input type="radio" name="workStyle" value="individual">Individuellement</label>
+<label><input type="radio" name="workStyle" value="mixed">Les deux selon le contexte</label>
+</div>
+</div>
+
+<div class="question-group">
+<label>Face à un problème complexe, vous :</label>
+<div class="radio-group">
+<label><input type="radio" name="problemSolving" value="analyze">Analysez méthodiquement</label>
+<label><input type="radio" name="problemSolving" value="creative">Cherchez des solutions créatives</label>
+<label><input type="radio" name="problemSolving" value="research">Recherchez des informations</label>
+<label><input type="radio" name="problemSolving" value="collaborate">Collaborez avec d'autres</label>
+</div>
+</div>
+
+<div class="question-group">
+<label>Votre motivation principale au travail :</label>
+<div class="radio-group">
+<label><input type="radio" name="motivation" value="challenge">Les défis techniques</label>
+<label><input type="radio" name="motivation" value="growth">Le développement personnel</label>
+<label><input type="radio" name="motivation" value="impact">L'impact sur l'entreprise</label>
+<label><input type="radio" name="motivation" value="team">L'esprit d'équipe</label>
+</div>
+</div>
+</div>
+
+<div class="form-actions">
+<button type="button" class="btn-secondary" onclick="goBack()">Retour</button>
+<button type="submit" class="btn-primary">Soumettre la candidature</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<div id="resultPage" class="page">
+<div class="container">
+<div class="result-container glass">
+<div class="result-header">
+<div class="result-icon">🎯</div>
+<h2>Résultat de votre candidature</h2>
+</div>
+<div class="compatibility-score">
+<div class="score-circle">
+<div class="score-value" id="compatibilityScore">0%</div>
+</div>
+<div class="score-label">Compatibilité avec le poste</div>
+</div>
+<div class="result-details">
+<h3>Analyse détaillée</h3>
+<div id="resultAnalysis"></div>
+</div>
+<div class="result-actions">
+<button class="btn-primary" onclick="goBackToJobs()">Voir d'autres postes</button>
+<button class="btn-secondary" onclick="downloadResult()">Télécharger le résultat</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

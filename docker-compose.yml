@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Base de données MySQL
+  database:
+    image: mysql:8.0
+    container_name: moncandidat_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: candidature_db
+      MYSQL_USER: candidat_user
+      MYSQL_PASSWORD: candidat_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - moncandidat_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "candidat_user", "-pcandidAT_pass"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # Backend FastAPI
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: moncandidat_backend
+    environment:
+      - DATABASE_URL=mysql+pymysql://candidat_user:candidat_pass@database:3306/candidature_db
+      - PYTHONPATH=/app
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - moncandidat_network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Nginx
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: moncandidat_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - moncandidat_network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  moncandidat_network:
+    driver: bridge
