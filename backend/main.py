@@ -10,6 +10,15 @@ app = FastAPI(
     description="API pour la plateforme de candidatures MonCandidat",
     version="1.0.0"
 )
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# ✅ Endpoint healthcheck
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 
 # Configuration CORS - CORRECTION pour Docker
 app.add_middleware(
@@ -158,6 +167,8 @@ async def api_root():
             "GET /api/users/{user_id}/applications"
         ]
     }
+
+
 
 if __name__ == "__main__":
     import uvicorn

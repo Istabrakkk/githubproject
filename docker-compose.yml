@@ -11,14 +11,15 @@ services:
       MYSQL_USER: candidat_user
       MYSQL_PASSWORD: candidat_pass
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - moncandidat_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "candidat_user", "-pcandidAT_pass"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "candidat_user", "-pcandidat_pass"]
+
       timeout: 20s
       retries: 10
       interval: 10s
@@ -42,20 +43,20 @@ services:
       - ./backend:/app
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health')"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 3 
+
 
   # Frontend Nginx
   frontend:
     build: 
-      context: ./frontend
+      context: ./static
       dockerfile: Dockerfile
     container_name: moncandidat_frontend
     ports:
-      - "80:80"
+      - "8000:80"
     depends_on:
       backend:
         condition: service_healthy

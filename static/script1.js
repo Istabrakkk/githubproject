@@ -45,22 +45,39 @@ const compatibilityWeights = {
     personality: 15
 };
 
-// Configuration API - CORRIGÉE
+// Configuration API - CORRIGÉE POUR DOCKER
 function getAPIBaseURL() {
-    const currentOrigin = window.location.origin;
-    console.log('Current origin:', currentOrigin);
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
     
-    // Développement local (Live Server, local file, etc.)
-    if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1') || currentOrigin.includes('5500') || currentOrigin.includes('5501')) {
-        return 'http://localhost:8000/api';
+    console.log('🔍 Détection environnement:', {
+        hostname: hostname,
+        protocol: protocol,
+        port: window.location.port
+    });
+    
+    // En production Docker (port 80)
+    if (window.location.port === '80' || window.location.port === '') {
+        const apiUrl = `${protocol}//${hostname}/api`;
+        console.log('🐳 Mode Docker détecté, URL API:', apiUrl);
+        return apiUrl;
     }
     
-    // Production/Docker
-    return currentOrigin + '/api';
+    // Développement local
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        const apiUrl = 'http://localhost:8000/api';
+        console.log('🏠 Mode développement détecté, URL API:', apiUrl);
+        return apiUrl;
+    }
+    
+    // Fallback
+    const fallbackUrl = `${protocol}//${hostname}/api`;
+    console.log('⚠️ Fallback URL:', fallbackUrl);
+    return fallbackUrl;
 }
 
 const API_BASE_URL = getAPIBaseURL();
-console.log('API_BASE_URL configuré:', API_BASE_URL);
+console.log('🎯 API_BASE_URL final:', API_BASE_URL);
 
 // Initialisation de l'application
 document.addEventListener('DOMContentLoaded', function() {
@@ -69,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    console.log('📋 Configuration des événements...');
     setupAuthTabs();
     setupAuthForms();
     setupJobCards();
@@ -81,64 +99,128 @@ function initializeApp() {
 // Test de l'API au démarrage
 async function testAPIConnection() {
     try {
-        console.log('🔍 Test de connexion API...');
+        console.log('🔍 Test de connexion API vers:', `${API_BASE_URL}/health`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
         const response = await fetch(`${API_BASE_URL}/health`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
             const data = await response.json();
             console.log('✅ API accessible:', data);
+            showSuccessMessage('API connectée avec succès!');
         } else {
-            console.warn('⚠️ API non accessible, mode statique activé');
+            console.warn('⚠️ API répond avec erreur:', response.status);
+            showWarningMessage('API accessible mais avec erreurs');
         }
     } catch (error) {
-        console.warn('⚠️ Impossible de joindre l\'API:', error);
+        console.error('❌ Impossible de joindre l\'API:', error.message);
+        showErrorMessage('Impossible de se connecter à l\'API. Mode hors ligne activé.');
     }
+}
+
+// Messages d'état
+function showSuccessMessage(message) {
+    console.log('✅', message);
+}
+
+function showWarningMessage(message) {
+    console.warn('⚠️', message);
+}
+
+function showErrorMessage(message) {
+    console.error('❌', message);
 }
 
 function setupAuthTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const authForms = document.querySelectorAll('.auth-form');
 
+    if (tabBtns.length === 0) {
+        console.error('❌ Boutons d\'onglets non trouvés');
+        return;
+    }
+
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('🔄 Changement d\'onglet vers:', btn.dataset.tab);
+            
             tabBtns.forEach(b => b.classList.remove('active'));
             authForms.forEach(f => f.classList.remove('active'));
+            
             btn.classList.add('active');
-            document.getElementById(btn.dataset.tab + 'Form').classList.add('active');
+            const formToShow = document.getElementById(btn.dataset.tab + 'Form');
+            if (formToShow) {
+                formToShow.classList.add('active');
+            } else {
+                console.error('❌ Formulaire non trouvé:', btn.dataset.tab + 'Form');
+            }
         });
     });
 }
 
 function setupAuthForms() {
-    document.getElementById('signinForm').addEventListener('submit', handleSignIn);
-    document.getElementById('signupForm').addEventListener('submit', handleSignUp);
+    const signinForm = document.getElementById('signinForm');
+    const signupForm = document.getElementById('signupForm');
+    
+    if (signinForm) {
+        signinForm.addEventListener('submit', handleSignIn);
+        console.log('✅ Formulaire de connexion configuré');
+    } else {
+        console.error('❌ Formulaire de connexion non trouvé');
+    }
+    
+    if (signupForm) {
+        signupForm.addEventListener('submit', handleSignUp);
+        console.log('✅ Formulaire d\'inscription configuré');
+    } else {
+        console.error('❌ Formulaire d\'inscription non trouvé');
+    }
 }
 
 function setupJobCards() {
     const jobCards = document.querySelectorAll('.job-card');
+    console.log(`🎯 Configuration de ${jobCards.length} cartes de jobs`);
+    
     jobCards.forEach(card => {
-        card.querySelector('.btn-apply').addEventListener('click', () => {
-            currentJob = card.dataset.job;
-            showJobApplication();
-        });
+        const applyBtn = card.querySelector('.btn-apply');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentJob = card.dataset.job;
+                console.log('📝 Candidature pour:', currentJob);
+                showJobApplication();
+            });
+        }
     });
 }
 
 function setupApplicationForm() {
-    document.getElementById('applicationForm').addEventListener('submit', handleApplication);
+    const applicationForm = document.getElementById('applicationForm');
+    if (applicationForm) {
+        applicationForm.addEventListener('submit', handleApplication);
+        console.log('✅ Formulaire de candidature configuré');
+    }
 }
 
-// API Functions - CORRIGÉES
+// API Functions - AMÉLIORÉES
 const api = {
     signUp: async (userData) => {
         try {
-            console.log('📝 Envoi données inscription:', userData);
+            console.log('📝 Envoi données inscription vers:', `${API_BASE_URL}/auth/signup`);
+            console.log('📝 Données:', userData);
+            
             const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: 'POST',
                 headers: { 
@@ -153,13 +235,13 @@ const api = {
                 })
             });
             
-            console.log('Response status:', response.status);
+            console.log('📨 Réponse statut:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Response error:', errorText);
-                let errorMessage = 'Erreur lors de l\'inscription';
+                console.error('❌ Erreur réponse:', errorText);
                 
+                let errorMessage = 'Erreur lors de l\'inscription';
                 try {
                     const error = JSON.parse(errorText);
                     errorMessage = error.detail || errorMessage;
@@ -180,7 +262,8 @@ const api = {
 
     signIn: async (email, password) => {
         try {
-            console.log('🔐 Tentative connexion:', email);
+            console.log('🔐 Tentative connexion vers:', `${API_BASE_URL}/auth/signin`);
+            
             const response = await fetch(`${API_BASE_URL}/auth/signin`, {
                 method: 'POST',
                 headers: { 
@@ -230,7 +313,8 @@ const api = {
 
     submitApplication: async (applicationData) => {
         try {
-            console.log('📋 Envoi de la candidature:', applicationData);
+            console.log('📋 Envoi candidature vers:', `${API_BASE_URL}/applications`);
+            
             const response = await fetch(`${API_BASE_URL}/applications`, {
                 method: 'POST',
                 headers: { 
@@ -263,38 +347,58 @@ const api = {
     }
 };
 
-// Gestion de l'authentification
+// Gestion de l'authentification - AMÉLIORÉE
 async function handleSignIn(e) {
     e.preventDefault();
-    const email = document.getElementById('signinEmail').value;
-    const password = document.getElementById('signinPassword').value;
+    console.log('🔐 Début handleSignIn');
+    
+    const email = document.getElementById('signinEmail')?.value;
+    const password = document.getElementById('signinPassword')?.value;
 
     if (!email || !password) {
         alert('Veuillez remplir tous les champs');
         return;
     }
 
+    // Désactiver le bouton pendant le traitement
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Connexion...';
+
     try {
         const user = await api.signIn(email, password);
         currentUser = user;
         showPage('jobsPage');
-        document.getElementById('userName').textContent = `Bienvenue ${user.full_name}`;
+        
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) {
+            userNameElement.textContent = `Bienvenue ${user.full_name || user.email}`;
+        }
         
         // Charger les jobs depuis l'API
         await loadJobsFromAPI();
+        
+        console.log('✅ Connexion terminée avec succès');
     } catch (error) {
         alert(`Erreur de connexion: ${error.message}`);
-        console.error('Erreur handleSignIn:', error);
+        console.error('❌ Erreur handleSignIn:', error);
+    } finally {
+        // Réactiver le bouton
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 }
 
 async function handleSignUp(e) {
     e.preventDefault();
+    console.log('📝 Début handleSignUp');
+    
     const userData = {
-        name: document.getElementById('signupName').value.trim(),
-        email: document.getElementById('signupEmail').value.trim(),
-        password: document.getElementById('signupPassword').value,
-        phone: document.getElementById('signupPhone').value.trim()
+        name: document.getElementById('signupName')?.value?.trim(),
+        email: document.getElementById('signupEmail')?.value?.trim(),
+        password: document.getElementById('signupPassword')?.value,
+        phone: document.getElementById('signupPhone')?.value?.trim()
     };
 
     // Validation des champs
@@ -310,17 +414,33 @@ async function handleSignUp(e) {
         return;
     }
 
+    // Désactiver le bouton pendant le traitement
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Inscription...';
+
     try {
         const user = await api.signUp(userData);
         currentUser = user;
         showPage('jobsPage');
-        document.getElementById('userName').textContent = `Bienvenue ${user.full_name}`;
+        
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) {
+            userNameElement.textContent = `Bienvenue ${user.full_name || user.email}`;
+        }
         
         // Charger les jobs depuis l'API
         await loadJobsFromAPI();
+        
+        console.log('✅ Inscription terminée avec succès');
     } catch (error) {
         alert(`Erreur d'inscription: ${error.message}`);
-        console.error('Erreur handleSignUp:', error);
+        console.error('❌ Erreur handleSignUp:', error);
+    } finally {
+        // Réactiver le bouton
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 }
 
@@ -348,13 +468,22 @@ function showJobApplication() {
         'stage-dev': 'Stage Développement'
     };
 
-    document.getElementById('jobTitle').textContent = `Candidature - ${jobTitles[currentJob]}`;
+    const jobTitleElement = document.getElementById('jobTitle');
+    if (jobTitleElement) {
+        jobTitleElement.textContent = `Candidature - ${jobTitles[currentJob]}`;
+    }
+    
     loadJobQuestions();
     showPage('applicationPage');
 }
 
 function loadJobQuestions() {
     const questionsContainer = document.getElementById('jobQuestions');
+    if (!questionsContainer) {
+        console.error('❌ Container des questions non trouvé');
+        return;
+    }
+    
     questionsContainer.innerHTML = '';
 
     if (jobQuestions[currentJob]) {
@@ -377,6 +506,7 @@ function loadJobQuestions() {
 // Soumission de candidature
 async function handleApplication(e) {
     e.preventDefault();
+    console.log('📋 Début soumission candidature');
     
     if (!currentUser) {
         alert('Vous devez être connecté pour postuler');
@@ -527,10 +657,17 @@ function calculateJobSpecificScore(formData) {
 
 // Affichage des résultats
 function showResult(compatibility) {
-    document.getElementById('compatibilityScore').textContent = `${compatibility}%`;
+    const scoreElement = document.getElementById('compatibilityScore');
+    if (scoreElement) {
+        scoreElement.textContent = `${compatibility}%`;
+    }
 
     const analysis = generateAnalysis(compatibility);
-    document.getElementById('resultAnalysis').innerHTML = analysis;
+    const analysisElement = document.getElementById('resultAnalysis');
+    if (analysisElement) {
+        analysisElement.innerHTML = analysis;
+    }
+    
     showPage('resultPage');
     animateScore(compatibility);
 }
@@ -552,7 +689,7 @@ function generateAnalysis(score) {
     analysis += '<div style="margin-top: 20px;"><strong>Points forts détectés:</strong><ul style="margin-top: 10px;">';
     if (score >= 70) analysis += '<li>Excellente adéquation technique</li>';
     if (score >= 60) analysis += '<li>Profil de personnalité adapté</li>';
-    if (currentJob.includes('stage')) analysis += '<li>Motivation d\'apprentissage</li>';
+    if (currentJob && currentJob.includes('stage')) analysis += '<li>Motivation d\'apprentissage</li>';
     analysis += '</ul></div>';
 
     analysis += '</div>';
@@ -560,6 +697,9 @@ function generateAnalysis(score) {
 }
 
 function animateScore(targetScore) {
+    const scoreElement = document.getElementById('compatibilityScore');
+    if (!scoreElement) return;
+    
     let currentScore = 0;
     const increment = targetScore / 50;
     const timer = setInterval(() => {
@@ -568,16 +708,23 @@ function animateScore(targetScore) {
             currentScore = targetScore;
             clearInterval(timer);
         }
-        document.getElementById('compatibilityScore').textContent = `${Math.round(currentScore)}%`;
+        scoreElement.textContent = `${Math.round(currentScore)}%`;
     }, 50);
 }
 
 // Navigation
 function showPage(pageId) {
+    console.log('📄 Navigation vers:', pageId);
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
-    document.getElementById(pageId).classList.add('active');
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        console.log('✅ Page affichée:', pageId);
+    } else {
+        console.error('❌ Page non trouvée:', pageId);
+    }
 }
 
 function goBack() {
@@ -589,16 +736,24 @@ function goBackToJobs() {
 }
 
 function logout() {
+    console.log('👋 Déconnexion...');
     currentUser = null;
     currentJob = null;
     showPage('authPage');
-    document.getElementById('signinForm').reset();
-    document.getElementById('signupForm').reset();
+    
+    // Reset des formulaires
+    const signinForm = document.getElementById('signinForm');
+    const signupForm = document.getElementById('signupForm');
+    if (signinForm) signinForm.reset();
+    if (signupForm) signupForm.reset();
 }
 
 function downloadResult() {
-    const score = document.getElementById('compatibilityScore').textContent;
-    const analysis = document.getElementById('resultAnalysis').textContent;
+    const scoreElement = document.getElementById('compatibilityScore');
+    const analysisElement = document.getElementById('resultAnalysis');
+    
+    const score = scoreElement ? scoreElement.textContent : 'N/A';
+    const analysis = analysisElement ? analysisElement.textContent : 'N/A';
 
     const resultData = `
 Résultat de candidature - MonCandidat
@@ -622,4 +777,19 @@ Date: ${new Date().toLocaleDateString()}
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+// Fonction utilitaire pour gérer les erreurs réseau
+function handleNetworkError(error) {
+    console.error('❌ Erreur réseau:', error);
+    
+    if (error.name === 'AbortError') {
+        return 'Timeout - Le serveur met trop de temps à répondre';
+    }
+    
+    if (error.message.includes('Failed to fetch')) {
+        return 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+    }
+    
+    return error.message || 'Erreur de connexion';
 }
