@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   # Base de données MySQL
@@ -19,7 +19,6 @@ services:
       - moncandidat_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "candidat_user", "-pcandidat_pass"]
-
       timeout: 20s
       retries: 10
       interval: 10s
@@ -42,12 +41,14 @@ services:
     volumes:
       - ./backend:/app
     restart: unless-stopped
+    expose:
+      - "8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s
       timeout: 10s
-      retries: 3 
-
+      retries: 3
+      start_period: 40s
 
   # Frontend Nginx
   frontend:
@@ -56,7 +57,7 @@ services:
       dockerfile: Dockerfile
     container_name: moncandidat_frontend
     ports:
-      - "8000:80"
+      - "8000:80"  # Port 8000 externe vers port 80 interne
     depends_on:
       backend:
         condition: service_healthy

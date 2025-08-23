@@ -18,6 +18,14 @@ app = FastAPI()
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+# Ajoutez cet endpoint dans main.py après les autres routes
+@app.get("/api/health")
+async def api_health_check():
+    return {
+        "status": "healthy",
+        "message": "Backend API is running",
+        "database": "connected" if database.test_connection() else "disconnected"
+    }
 
 
 # Configuration CORS - CORRECTION pour Docker

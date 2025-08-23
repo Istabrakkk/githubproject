@@ -34,19 +34,12 @@ Base = declarative_base()
 def test_connection():
     """Test de connexion à la base de données"""
     try:
-        print("🔍 Test de connexion à la base de données...")
         with engine.connect() as conn:
             result = conn.execute(text("SELECT 1 as test"))
             test_value = result.fetchone()[0]
-            if test_value == 1:
-                print("✅ Connexion DB réussie!")
-                return True
-            else:
-                print("❌ Test de connexion échoué!")
-                return False
+            return test_value == 1
     except Exception as e:
         print(f"❌ Erreur DB: {e}")
-        print(f"❌ URL utilisée: {DATABASE_URL}")
         return False
 
 def wait_for_db(max_retries=30, delay=2):
